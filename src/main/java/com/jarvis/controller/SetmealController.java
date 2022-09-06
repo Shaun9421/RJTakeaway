@@ -15,6 +15,10 @@ import com.jarvis.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +39,8 @@ public class SetmealController {
     private CategoryService categoryService;
 
 
+    @Autowired
+    private CacheManager cacheManager;
     /**
      * 新增套餐
      * 涉及两张表的操作：套餐表和菜品表；
@@ -42,6 +48,7 @@ public class SetmealController {
      * @return
      */
     @PostMapping
+    @CacheEvict(value = "sermealCache",allEntries = true) //删除缓存
     public R<String> save(@RequestBody SetmealDto setmealDto){
 
         setmealService.saveWithDish(setmealDto);
@@ -106,6 +113,7 @@ public class SetmealController {
      * @return
      */
     @DeleteMapping
+    @CacheEvict(value = "setmealCache",allEntries = true) //删除缓存
     public R<String> delete(@RequestParam("ids") List<Long> ids){
         //删除套餐
 
@@ -169,10 +177,11 @@ public class SetmealController {
     }
 
     /**
-     * 根据条件查询套餐数据
+     * 根据条件查询套餐数据   缓存的返回结果R需要实现序列化接口
      * @param setmeal
      * @return
      */
+    @Cacheable(value = "setmealCache",key = "#setmeal.categoryId + '_' + #setmeal.status")//list返回结果进行缓存
     @GetMapping("/list" )
     public R<List<Setmeal>> list( Setmeal setmeal){
         LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
