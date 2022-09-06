@@ -1,21 +1,65 @@
 server:
-  port: 8081
+  port: 8080
+#spring:
+#  application:
+#    name: tuijiTakeaway
+#  datasource:
+#    druid:
+#      driver-class-name: com.mysql.cj.jdbc.Driver
+#      url: jdbc:mysql://localhost:3306/ruiji?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+#      username: root
+#      password: 123456
+#    redis:
+#      host: localhost
+#      port: 6379
+#      database: 0
+#  cache:
 spring:
   application:
-    name: tuijiTakeaway
-  datasource:
-    druid:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/ruiji?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
-      username: root
-      password: 123456
+    #应用的名称，可选
+    name: RJ-Takeaway
+  shardingsphere:
+    datasource:
+      names:
+        master,slave
+        # 主数据源
+      master:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://39.108.99.115:3306/ruiji
+        username: shaun
+        password: 123456
+      slave:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://39.108.221.67:3306/ruiji
+        username: shaun
+        password: 123456
+#    druid:
+#      test-on-borrow: true
+#      test-while-idle=true: true
+
+    masterslave:
+      # 读写分离配置
+      load-balance-algorithm-type: round_robin #轮询
+      # 最终的数据源名称
+      name: dataSource
+      # 主库数据源名称
+      master-data-source-name: master
+      # 从库数据源名称列表，多个逗号分隔
+      slave-data-source-names: slave
+    props:
+      sql:
+        show: true #开启SQL显示，默认false
+  main:
+    allow-bean-definition-overriding: true
     redis:
-      host: localhost
+      host: 172.17.2.94
       port: 6379
       database: 0
-  cache:
-    redis:
-      time-to-live: 1800000 #设置缓存时间的过期时间
+    cache:
+      redis:
+        time-to-live: 1800000 #设置缓存数据的过期时间
 mybatis-plus:
   configuration:
     #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
@@ -27,3 +71,4 @@ mybatis-plus:
 
 reggie:
   path: D:\Program_data\codedata\java\git\SPTakeaway\SP-Takeaway\picture\img
+#下面这两个配置，可以在每次连接的时候判断一些连接是否有效
